@@ -1,0 +1,9 @@
+# WorkOS Configuration
+# Get these from https://dashboard.workos.com
+
+WORKOS_API_KEY=sk_test_xxxxx
+WORKOS_CLIENT_ID=client_xxxxx
+WORKOS_COOKIE_PASSWORD=a-32-character-or-longer-secret-for-signing-cookies
+
+# Optional: Set your redirect URI (defaults to /auth/callback)
+# WORKOS_REDIRECT_URI=http://localhost:5173/auth/callback

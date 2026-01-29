@@ -2,5 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sneakstudy",
   "compatibility_date": "2025-08-03",
+  "compatibility_flags": ["nodejs_compat"],
   "main": "./src/index.tsx"
+  // Secrets (set via `wrangler secret put`):
+  // - WORKOS_API_KEY
+  // - WORKOS_CLIENT_ID
+  // - WORKOS_COOKIE_PASSWORD
 }
