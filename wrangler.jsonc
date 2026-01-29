@@ -3,8 +3,24 @@
   "name": "sneakstudy",
   "compatibility_date": "2025-08-03",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "./src/index.tsx"
-  // Secrets (set via `wrangler secret put`):
+  "main": "./src/index.tsx",
+  "routes": [
+    { "pattern": "sneak.study", "custom_domain": true }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "USER_DO",
+        "class_name": "UserDurableObject"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["UserDurableObject"]
+    }
+  ]  // Secrets (set via `wrangler secret put`):
   // - WORKOS_API_KEY
   // - WORKOS_CLIENT_ID
   // - WORKOS_COOKIE_PASSWORD

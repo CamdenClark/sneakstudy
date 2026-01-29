@@ -3,12 +3,15 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { createMiddleware } from 'hono/factory'
 import { WorkOS } from '@workos-inc/node'
 
+import type { UserDurableObject } from './db/user-do'
+
 type Env = {
   Bindings: {
     WORKOS_API_KEY: string
     WORKOS_CLIENT_ID: string
     WORKOS_COOKIE_PASSWORD: string
     WORKOS_REDIRECT_URI?: string
+    USER_DO: DurableObjectNamespace<UserDurableObject>
   }
   Variables: {
     user: {

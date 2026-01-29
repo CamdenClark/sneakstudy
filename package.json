@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "@workos-inc/node": "^8.0.0",
+    "drizzle-orm": "^0.45.1",
     "hono": "^4.11.7"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.2.3",
+    "drizzle-kit": "^0.31.8",
     "vite": "^6.3.5",
     "vite-ssr-components": "^0.5.2",
     "wrangler": "^4.17.0"
