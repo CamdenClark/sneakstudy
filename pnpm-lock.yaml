@@ -14,9 +14,6 @@ importers:
       hono:
         specifier: ^4.12.9
         version: 4.12.9
-      jose:
-        specifier: ^6.2.2
-        version: 6.2.2
     devDependencies:
       wrangler:
         specifier: ^4.4.0
@@ -444,9 +441,6 @@ packages:
     resolution: {integrity: sha512-wy3T8Zm2bsEvxKZM5w21VdHDDcwVS1yUFFY6i8UobSsKfFceT7TOwhbhfKsDyx7tYQlmRM5FLpIuYvNFyjctiA==}
     engines: {node: '>=16.9.0'}
 
-  jose@6.2.2:
-    resolution: {integrity: sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ==}
-
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
@@ -798,8 +792,6 @@ snapshots:
     optional: true
 
   hono@4.12.9: {}
-
-  jose@6.2.2: {}
 
   kleur@4.1.5: {}
 

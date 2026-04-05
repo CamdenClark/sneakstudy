@@ -1,14 +1,14 @@
 import { Hono } from "hono";
-import { getCookie, setCookie } from "hono/cookie";
+import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { WorkOS } from "@workos-inc/node";
-import { jwtVerify } from "jose";
-import { authMiddleware, getJWKS } from "./auth";
+import { authMiddleware, getSessionFromCookie, SESSION_COOKIE } from "./auth";
 
 type Env = {
   Bindings: {
     WORKOS_API_KEY: string;
     WORKOS_CLIENT_ID: string;
     WORKOS_REDIRECT_URI: string;
+    WORKOS_COOKIE_PASSWORD: string;
   };
   Variables: {
     userId: string;
@@ -35,19 +35,17 @@ app.get("/auth/callback", async (c) => {
   }
 
   const workos = new WorkOS(c.env.WORKOS_API_KEY);
-  const { accessToken, refreshToken } =
+  const { sealedSession } =
     await workos.userManagement.authenticateWithCode({
       clientId: c.env.WORKOS_CLIENT_ID,
       code,
+      session: {
+        sealSession: true,
+        cookiePassword: c.env.WORKOS_COOKIE_PASSWORD,
+      },
     });
 
-  setCookie(c, "access_token", accessToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "Lax",
-    path: "/",
-  });
-  setCookie(c, "refresh_token", refreshToken, {
+  setCookie(c, SESSION_COOKIE, sealedSession!, {
     httpOnly: true,
     secure: true,
     sameSite: "Lax",
@@ -57,34 +55,45 @@ app.get("/auth/callback", async (c) => {
   return c.redirect("/");
 });
 
-app.get("/auth/logout", (c) => {
+app.get("/auth/logout", async (c) => {
   const workos = new WorkOS(c.env.WORKOS_API_KEY);
-  const accessToken = getCookie(c, "access_token");
+  const sessionData = getCookie(c, SESSION_COOKIE);
 
-  return c.redirect(
-    workos.userManagement.getLogoutUrl({ sessionId: accessToken ?? "" })
-  );
+  if (sessionData) {
+    const session = workos.userManagement.loadSealedSession({
+      sessionData,
+      cookiePassword: c.env.WORKOS_COOKIE_PASSWORD,
+    });
+    const url = await session.getLogoutUrl();
+    deleteCookie(c, SESSION_COOKIE);
+    return c.redirect(url);
+  }
+
+  deleteCookie(c, SESSION_COOKIE);
+  return c.redirect("/");
 });
 
 // Protected routes
 app.use("/api/*", authMiddleware);
 
 app.get("/api/me", (c) => {
-  return c.json({ userId: c.get("userId") });
+  return c.json({ userId: c.get("userId"), email: c.get("email") });
 });
 
 app.get("/", async (c) => {
-  let email: string | null = null;
+  const sessionData = getCookie(c, SESSION_COOKIE);
+  const session = await getSessionFromCookie({
+    env: c.env,
+    sessionData,
+  });
 
-  const accessToken = getCookie(c, "access_token");
-  if (accessToken) {
-    try {
-      const JWKS = getJWKS(c.env.WORKOS_CLIENT_ID);
-      const { payload } = await jwtVerify(accessToken, JWKS);
-      email = (payload as any).email ?? null;
-    } catch {
-      // not authed, show login
-    }
+  if (session?.sealedSession) {
+    setCookie(c, SESSION_COOKIE, session.sealedSession, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      path: "/",
+    });
   }
 
   return c.html(
@@ -96,9 +105,9 @@ app.get("/", async (c) => {
       </head>
       <body>
         <h1>SneakStudy</h1>
-        {email ? (
+        {session ? (
           <p>
-            Logged in as {email} — <a href="/auth/logout">Log out</a>
+            Logged in as {session.user.email} — <a href="/auth/logout">Log out</a>
           </p>
         ) : (
           <a href="/auth/login">Log in</a>

@@ -1,13 +1,13 @@
 import { createMiddleware } from "hono/factory";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { WorkOS } from "@workos-inc/node";
-import { createRemoteJWKSet, jwtVerify } from "jose";
 
 type Env = {
   Bindings: {
     WORKOS_API_KEY: string;
     WORKOS_CLIENT_ID: string;
     WORKOS_REDIRECT_URI: string;
+    WORKOS_COOKIE_PASSWORD: string;
   };
   Variables: {
     userId: string;
@@ -15,69 +15,64 @@ type Env = {
   };
 };
 
-const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
+const SESSION_COOKIE = "wos-session";
 
-export function getJWKS(clientId: string) {
-  if (!jwksCache.has(clientId)) {
-    jwksCache.set(
-      clientId,
-      createRemoteJWKSet(
-        new URL(`https://api.workos.com/sso/jwks/${clientId}`)
-      )
-    );
+export async function getSessionFromCookie(c: {
+  env: Env["Bindings"];
+  sessionData: string | undefined;
+}) {
+  if (!c.sessionData) return null;
+
+  const workos = new WorkOS(c.env.WORKOS_API_KEY);
+  const session = workos.userManagement.loadSealedSession({
+    sessionData: c.sessionData,
+    cookiePassword: c.env.WORKOS_COOKIE_PASSWORD,
+  });
+
+  const result = await session.authenticate();
+  if (result.authenticated) {
+    return { user: result.user, sessionId: result.sessionId };
   }
-  return jwksCache.get(clientId)!;
+
+  // Try refresh
+  const refreshResult = await session.refresh();
+  if (refreshResult.authenticated) {
+    return {
+      user: refreshResult.user,
+      sessionId: refreshResult.sessionId,
+      sealedSession: refreshResult.sealedSession,
+    };
+  }
+
+  return null;
 }
 
-export const authMiddleware = createMiddleware<Env>(async (c, next) => {
-  const accessToken = getCookie(c, "access_token");
+export { SESSION_COOKIE };
 
-  if (!accessToken) {
+export const authMiddleware = createMiddleware<Env>(async (c, next) => {
+  const sessionData = getCookie(c, SESSION_COOKIE);
+
+  const session = await getSessionFromCookie({
+    env: c.env,
+    sessionData,
+  });
+
+  if (!session) {
+    deleteCookie(c, SESSION_COOKIE);
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  try {
-    const JWKS = getJWKS(c.env.WORKOS_CLIENT_ID);
-    const { payload } = await jwtVerify(accessToken, JWKS);
-    c.set("userId", payload.sub as string);
-    c.set("email", (payload as any).email as string);
-  } catch {
-    // Try refreshing
-    const refreshToken = getCookie(c, "refresh_token");
-    if (!refreshToken) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-
-    try {
-      const workos = new WorkOS(c.env.WORKOS_API_KEY);
-      const result = await workos.userManagement.authenticateWithRefreshToken({
-        clientId: c.env.WORKOS_CLIENT_ID,
-        refreshToken,
-      });
-
-      setCookie(c, "access_token", result.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "Lax",
-        path: "/",
-      });
-      setCookie(c, "refresh_token", result.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "Lax",
-        path: "/",
-      });
-
-      const JWKS = getJWKS(c.env.WORKOS_CLIENT_ID);
-      const { payload } = await jwtVerify(result.accessToken, JWKS);
-      c.set("userId", payload.sub as string);
-      c.set("email", (payload as any).email as string);
-    } catch {
-      deleteCookie(c, "access_token");
-      deleteCookie(c, "refresh_token");
-      return c.json({ error: "Unauthorized" }, 401);
-    }
+  if (session.sealedSession) {
+    setCookie(c, SESSION_COOKIE, session.sealedSession, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Lax",
+      path: "/",
+    });
   }
+
+  c.set("userId", session.user.id);
+  c.set("email", session.user.email);
 
   await next();
 });
