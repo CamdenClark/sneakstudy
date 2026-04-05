@@ -11,12 +11,13 @@ type Env = {
   };
   Variables: {
     userId: string;
+    email: string;
   };
 };
 
 const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 
-function getJWKS(clientId: string) {
+export function getJWKS(clientId: string) {
   if (!jwksCache.has(clientId)) {
     jwksCache.set(
       clientId,
@@ -39,6 +40,7 @@ export const authMiddleware = createMiddleware<Env>(async (c, next) => {
     const JWKS = getJWKS(c.env.WORKOS_CLIENT_ID);
     const { payload } = await jwtVerify(accessToken, JWKS);
     c.set("userId", payload.sub as string);
+    c.set("email", (payload as any).email as string);
   } catch {
     // Try refreshing
     const refreshToken = getCookie(c, "refresh_token");
@@ -69,6 +71,7 @@ export const authMiddleware = createMiddleware<Env>(async (c, next) => {
       const JWKS = getJWKS(c.env.WORKOS_CLIENT_ID);
       const { payload } = await jwtVerify(result.accessToken, JWKS);
       c.set("userId", payload.sub as string);
+      c.set("email", (payload as any).email as string);
     } catch {
       deleteCookie(c, "access_token");
       deleteCookie(c, "refresh_token");

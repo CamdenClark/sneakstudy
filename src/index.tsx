@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { WorkOS } from "@workos-inc/node";
-import { authMiddleware } from "./auth";
+import { jwtVerify } from "jose";
+import { authMiddleware, getJWKS } from "./auth";
 
 type Env = {
   Bindings: {
@@ -11,6 +12,7 @@ type Env = {
   };
   Variables: {
     userId: string;
+    email: string;
   };
 };
 
@@ -71,19 +73,39 @@ app.get("/api/me", (c) => {
   return c.json({ userId: c.get("userId") });
 });
 
-app.get("/", (c) => {
-  return c.html(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SneakStudy</title>
-</head>
-<body>
-  <h1>SneakStudy</h1>
-  <a href="/auth/login">Log in</a>
-</body>
-</html>`);
+app.get("/", async (c) => {
+  let email: string | null = null;
+
+  const accessToken = getCookie(c, "access_token");
+  if (accessToken) {
+    try {
+      const JWKS = getJWKS(c.env.WORKOS_CLIENT_ID);
+      const { payload } = await jwtVerify(accessToken, JWKS);
+      email = (payload as any).email ?? null;
+    } catch {
+      // not authed, show login
+    }
+  }
+
+  return c.html(
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>SneakStudy</title>
+      </head>
+      <body>
+        <h1>SneakStudy</h1>
+        {email ? (
+          <p>
+            Logged in as {email} — <a href="/auth/logout">Log out</a>
+          </p>
+        ) : (
+          <a href="/auth/login">Log in</a>
+        )}
+      </body>
+    </html>
+  );
 });
 
 export default app;
