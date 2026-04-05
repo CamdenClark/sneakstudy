@@ -8,9 +8,15 @@ importers:
 
   .:
     dependencies:
+      '@workos-inc/node':
+        specifier: ^8.11.1
+        version: 8.11.1
       hono:
         specifier: ^4.12.9
         version: 4.12.9
+      jose:
+        specifier: ^6.2.2
+        version: 6.2.2
     devDependencies:
       wrangler:
         specifier: ^4.4.0
@@ -403,6 +409,10 @@ packages:
   '@speed-highlight/core@1.2.15':
     resolution: {integrity: sha512-BMq1K3DsElxDWawkX6eLg9+CKJrTVGCBAWVuHXVUV2u0s2711qiChLSId6ikYPfxhdYocLNt3wWwSvDiTvFabw==}
 
+  '@workos-inc/node@8.11.1':
+    resolution: {integrity: sha512-kfuyMZBrbNgT8HSQo/Wz3v/OBh0J4M/KCrWu7We30xMdpd0hD4anvZrrLbuRowx93SSytzaKHRvVn88Ads1naA==}
+    engines: {node: '>=20.15.0'}
+
   blake3-wasm@2.1.5:
     resolution: {integrity: sha512-F1+K8EbfOZE49dtoPtmxUQrpXaBIl3ICvasLh+nJta0xkz+9kF/7uet9fLnwKqhDrmj6g+6K3Tw9yQPUg2ka5g==}
 
@@ -422,6 +432,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  eventemitter3@5.0.4:
+    resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
+
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -430,6 +443,9 @@ packages:
   hono@4.12.9:
     resolution: {integrity: sha512-wy3T8Zm2bsEvxKZM5w21VdHDDcwVS1yUFFY6i8UobSsKfFceT7TOwhbhfKsDyx7tYQlmRM5FLpIuYvNFyjctiA==}
     engines: {node: '>=16.9.0'}
+
+  jose@6.2.2:
+    resolution: {integrity: sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ==}
 
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
@@ -735,6 +751,10 @@ snapshots:
 
   '@speed-highlight/core@1.2.15': {}
 
+  '@workos-inc/node@8.11.1':
+    dependencies:
+      eventemitter3: 5.0.4
+
   blake3-wasm@2.1.5: {}
 
   cookie@1.1.1: {}
@@ -772,10 +792,14 @@ snapshots:
       '@esbuild/win32-ia32': 0.27.3
       '@esbuild/win32-x64': 0.27.3
 
+  eventemitter3@5.0.4: {}
+
   fsevents@2.3.3:
     optional: true
 
   hono@4.12.9: {}
+
+  jose@6.2.2: {}
 
   kleur@4.1.5: {}
 

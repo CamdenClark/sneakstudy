@@ -2,10 +2,14 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sneakstudy",
   "main": "src/index.ts",
-  "compatibility_date": "2026-04-01"
-  // "compatibility_flags": [
-  //   "nodejs_compat"
-  // ],
+  "compatibility_date": "2026-04-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "routes": [
+    { "pattern": "sneak.study", "custom_domain": true },
+    { "pattern": "www.sneak.study", "custom_domain": true }
+  ],
   // "vars": {
   //   "MY_VAR": "my-variable"
   // },
