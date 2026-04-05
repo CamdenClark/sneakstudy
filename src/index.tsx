@@ -19,7 +19,7 @@ type Env = {
 const app = new Hono<Env>();
 
 app.get("/auth/login", (c) => {
-  const workos = new WorkOS(c.env.WORKOS_API_KEY);
+  const workos = new WorkOS(c.env.WORKOS_API_KEY, { clientId: c.env.WORKOS_CLIENT_ID });
   const url = workos.userManagement.getAuthorizationUrl({
     clientId: c.env.WORKOS_CLIENT_ID,
     redirectUri: c.env.WORKOS_REDIRECT_URI,
@@ -34,7 +34,7 @@ app.get("/auth/callback", async (c) => {
     return c.json({ error: "Missing code" }, 400);
   }
 
-  const workos = new WorkOS(c.env.WORKOS_API_KEY);
+  const workos = new WorkOS(c.env.WORKOS_API_KEY, { clientId: c.env.WORKOS_CLIENT_ID });
   const { sealedSession } =
     await workos.userManagement.authenticateWithCode({
       clientId: c.env.WORKOS_CLIENT_ID,
@@ -56,7 +56,7 @@ app.get("/auth/callback", async (c) => {
 });
 
 app.get("/auth/logout", async (c) => {
-  const workos = new WorkOS(c.env.WORKOS_API_KEY);
+  const workos = new WorkOS(c.env.WORKOS_API_KEY, { clientId: c.env.WORKOS_CLIENT_ID });
   const sessionData = getCookie(c, SESSION_COOKIE);
 
   if (sessionData) {

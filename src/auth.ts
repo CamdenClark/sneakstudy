@@ -23,7 +23,7 @@ export async function getSessionFromCookie(c: {
 }) {
   if (!c.sessionData) return null;
 
-  const workos = new WorkOS(c.env.WORKOS_API_KEY);
+  const workos = new WorkOS(c.env.WORKOS_API_KEY, { clientId: c.env.WORKOS_CLIENT_ID });
   const session = workos.userManagement.loadSealedSession({
     sessionData: c.sessionData,
     cookiePassword: c.env.WORKOS_COOKIE_PASSWORD,
