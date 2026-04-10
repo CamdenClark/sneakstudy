@@ -10,6 +10,11 @@
     { "pattern": "sneak.study", "custom_domain": true },
     { "pattern": "www.sneak.study", "custom_domain": true }
   ],
+  "env": {
+    "preview": {
+      "workers_dev": true
+    }
+  },
   // "vars": {
   //   "MY_VAR": "my-variable"
   // },
