@@ -7,7 +7,7 @@ type Env = {
   Bindings: {
     WORKOS_API_KEY: string;
     WORKOS_CLIENT_ID: string;
-    WORKOS_REDIRECT_URI: string;
+    WORKOS_REDIRECT_URI?: string;
     WORKOS_COOKIE_PASSWORD: string;
   };
   Variables: {
@@ -18,11 +18,15 @@ type Env = {
 
 const app = new Hono<Env>();
 
+function getRedirectUri(c: { env: Env["Bindings"]; req: { url: string } }) {
+  return c.env.WORKOS_REDIRECT_URI ?? new URL("/auth/callback", c.req.url).toString();
+}
+
 app.get("/auth/login", (c) => {
   const workos = new WorkOS(c.env.WORKOS_API_KEY, { clientId: c.env.WORKOS_CLIENT_ID });
   const url = workos.userManagement.getAuthorizationUrl({
     clientId: c.env.WORKOS_CLIENT_ID,
-    redirectUri: c.env.WORKOS_REDIRECT_URI,
+    redirectUri: getRedirectUri(c),
     provider: "authkit",
   });
   return c.redirect(url);

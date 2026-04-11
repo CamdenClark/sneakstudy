@@ -10,6 +10,14 @@
     { "pattern": "sneak.study", "custom_domain": true },
     { "pattern": "www.sneak.study", "custom_domain": true }
   ],
+  "preview_urls": true,
+  "env": {
+    "staging": {
+      "name": "sneakstudy-staging",
+      "workers_dev": true,
+      "routes": []
+    }
+  },
   // "vars": {
   //   "MY_VAR": "my-variable"
   // },
